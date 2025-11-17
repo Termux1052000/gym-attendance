@@ -143,6 +143,110 @@
                 const response = await fetch("https://script.google.com/macros/s/AKfycbxlC3LdTeESaaEnxpUG9Z2fk7yJLXMuUfg0uISQTD3G1IUnMLpHFgi3zLvxy83FwUE3/exec", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone, idCode }),
+                    mode: 'cors'
+                });
+                const data = await response.json();
+
+                if(data.status === "success") {
+                    memberName.textContent = "تم تسجيل الحضور بنجاح";
+                    membershipType.textContent = "";
+                    membershipEnd.textContent = "";
+                    daysLeft.textContent = "";
+                    statusDiv.className = "status active";
+                    statusDiv.textContent = "✔️ حضورك تم تسجيله اليوم";
+                    resultDiv.style.display = "block";
+                } else {
+                    alert("حدث خطأ أثناء تسجيل الحضور");
+                }
+            } catch(e) {
+                console.error(e);
+                alert("فشل الاتصال بالسيرفر");
+            } finally {
+                submitBtn.disabled = false;
+                loader.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>        <div class="input-group">
+            <label>رقم الهاتف</label>
+            <input type="tel" id="phone" placeholder="أدخل رقم الهاتف">
+        </div>
+
+        <div class="input-group">
+            <label>كود الحضور</label>
+            <input type="password" id="idCode" placeholder="أدخل الكود الشخصي">
+        </div>
+
+        <div class="remember">
+            <label>تذكرني</label>
+            <input type="checkbox" id="remember">
+        </div>
+
+        <button class="btn" id="submitBtn">تسجيل الحضور</button>
+        <div class="loader" id="loader"></div>
+
+        <div class="attendance-result" id="result">
+            <div class="member-info">
+                <h3 id="memberName"></h3>
+                <p id="membershipType"></p>
+                <p id="membershipEnd"></p>
+                <p id="daysLeft"></p>
+            </div>
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="footer">
+            <p>© <span id="currentYear"></span> جيم عبد الودود</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+        const submitBtn = document.getElementById("submitBtn");
+        const loader = document.getElementById("loader");
+        const resultDiv = document.getElementById("result");
+
+        const phoneInput = document.getElementById("phone");
+        const idCodeInput = document.getElementById("idCode");
+        const remember = document.getElementById("remember");
+
+        const memberName = document.getElementById("memberName");
+        const membershipType = document.getElementById("membershipType");
+        const membershipEnd = document.getElementById("membershipEnd");
+        const daysLeft = document.getElementById("daysLeft");
+        const statusDiv = document.getElementById("status");
+
+        const savedPhone = localStorage.getItem("gymPhone");
+        const savedIdCode = localStorage.getItem("gymIdCode");
+        if (savedPhone && savedIdCode) {
+            phoneInput.value = savedPhone;
+            idCodeInput.value = savedIdCode;
+            remember.checked = true;
+        }
+
+        submitBtn.addEventListener("click", async () => {
+            const phone = phoneInput.value.trim();
+            const idCode = idCodeInput.value.trim();
+            if (!phone || !idCode) { alert("يرجى إدخال البيانات كاملة"); return; }
+
+            if (remember.checked) {
+                localStorage.setItem("gymPhone", phone);
+                localStorage.setItem("gymIdCode", idCode);
+            } else {
+                localStorage.removeItem("gymPhone");
+                localStorage.removeItem("gymIdCode");
+            }
+
+            submitBtn.disabled = true; loader.style.display = "block";
+
+            try {
+                // استدعاء API Apps Script
+                const response = await fetch("https://script.google.com/macros/s/AKfycbxlC3LdTeESaaEnxpUG9Z2fk7yJLXMuUfg0uISQTD3G1IUnMLpHFgi3zLvxy83FwUE3/exec", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ phone, idCode })
                 });
                 const data = await response.json();
